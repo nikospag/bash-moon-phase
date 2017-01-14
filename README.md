@@ -7,7 +7,7 @@ Bash moon phase, dynamicaly calculated and shaded.
 
 ![Moon](https://github.com/nikospag/bash-moon-phase/blob/master/sample/phase.png)
 
-The input mooon image file size is 298x298 pixel, and must be always be square (otherwise the moon circle will be distorted).
+The input moon image file size is 298x298 pixel, and must always be square (otherwise the moon circle will be distorted).
 
 The output image size and output folder can be adjusted (see comments in bash file).
 
