@@ -1,15 +1,8 @@
 # bash-moon-phase
 Bash moon phase, dynamicaly calculated and shaded.
+==========================================================
 
-This programm-script dynamicaly calculates and extracts to a folder an image of the current moon phase.
-
-
-
-
-
-
-
-
+##This programm-script dynamicaly calculates and extracts to a folder an image of the current moon phase.
 
 The input mooon image file size is 298x298 pixel, and must be always be square (otherwise the moon circle will be distorted).
 
