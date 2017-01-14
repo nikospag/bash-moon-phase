@@ -2,7 +2,7 @@
 #
 moon=${HOME}/moon/moon.png                #Input image location
 size="-resize 60x60"                      # Outout image size
-icon=${HOME}/.cache/conky/phase.png       #Output image location and name 
+icon=${HOME}/.cache/conky/phase.png       #Output image location and image name 
 tofile=${HOME}/.cache/conky/moon.txt      #Text file location. Contains phase name and phase age in days.
 lp=2551443               #Lunar period (unix time in seconds)
 now=$(date -u +"%s")     #Time now (unix time)
