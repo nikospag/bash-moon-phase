@@ -1,0 +1,66 @@
+#!/bin/bash
+#
+moon=${HOME}/Downloads/conky-weather-master/moon/moon.png  #Input image location
+size="-resize 60x60"                                     # Outout image size
+icon=${HOME}/.cache/conky/phase.png                      #Output image location and name 
+tofile=${HOME}/.cache/conky/moon.txt                     #Text file location. Contains phase name and phase age in days.
+lp=2551443
+now=$(date -u +"%s")
+newmoon=592500
+phase_d=$((($now - $newmoon) % $lp))
+phase_number=$(echo 'scale=0; '${phase_d}'/86.400' | bc -l)
+phase_day=$(echo 'scale=2; '$phase_number"/1000" | bc -l)
+phase=$(echo "scale=3;($phase_number-(29530/2))/(29530/2)" | bc -l)
+moon=${HOME}/Downloads/conky-weather-master/moon/moon.png
+
+radius=149
+#phase=-.70
+if (($(echo "$phase < 0" | bc)!=0)); then
+	for y in $(seq 0 $radius);
+		do
+		phase=$(echo 'sqrt('$phase'^2)' | bc -l)
+		x=$(echo 'sqrt('$radius'^2-'$y'^2)' | bc -l)
+		x=$(echo "($x+0.5)/1" | bc)
+		X=$(echo "$radius-$x" | bc)
+		Y=$(echo "$radius-$y" | bc)
+		Y_mirror=$(echo "$radius+$y" | bc)
+		moon_width=$(echo '2*('$radius'-'$X')' | bc)
+		shade=$(echo "$moon_width*$phase" | bc)
+		x_shade=$(echo "$X+$shade" | bc)
+		
+		convert -size 298x298 canvas:none -fill "rgba(0, 0, 0, 0.75)" -draw "line $X,$Y $x_shade,$Y" +depth miff:-;
+			if [ $Y_mirror -ne $Y ]; then
+		convert -size 298x298 canvas:none -fill "rgba(0, 0, 0, 0.75)" -draw "line $X,$Y_mirror $x_shade,$Y_mirror" +depth miff:-;
+			fi
+	done | convert - -background none -layers flatten png:- |  composite - ${moon} ${size} ${icon}
+elif (($(echo "$phase > 0" | bc)!=0)); then
+		for y in $(seq 0 $radius);
+		do
+		phase=$(echo 'sqrt('$phase'^2)' | bc -l)
+		x=$(echo 'sqrt('$radius'^2-'$y'^2)' | bc -l)
+		x=$(echo "($x+0.5)/1" | bc)
+		X=$(echo "$radius+$x" | bc)
+		Y=$(echo "$radius-$y" | bc)
+		Y_mirror=$(echo "$radius+$y" | bc)
+		moon_width=$(echo '2*('$radius'-'$X')' | bc)
+		shade=$(echo "$moon_width*$phase" | bc)
+		x_shade=$(echo "$X+$shade" | bc)
+
+		convert -size 298x298 canvas:none -fill "rgba(0, 0, 0, 0.75)" -draw "line $X,$Y $x_shade,$Y" +depth miff:-;
+			if [ $Y_mirror -ne $Y ]; then
+		convert -size 298x298 canvas:none -fill "rgba(0, 0, 0, 0.75)" -draw "line $X,$Y_mirror $x_shade,$Y_mirror" +depth miff:-;
+			fi
+	done | convert - -background none -layers flatten png:- |  composite - ${moon} ${size} ${icon}
+fi
+		
+[[ -f ${tofile} ]] && rm ${tofile}
+echo ${phase_day} >> ${tofile}
+
+[[ $phase_number -ge 0 ]] && [[ $phase_number -lt 1000 ]] && echo New >> ${tofile} && echo Moon >> ${tofile}
+[[ $phase_number -ge 1000 ]] && [[ $phase_number -lt 6560 ]] && echo Waxing >> ${tofile} && echo Crescent >> ${tofile}
+[[ $phase_number -ge 6560 ]] && [[ $phase_number -lt 7560 ]] && echo First >> ${tofile} && echo Quarter >> ${tofile}
+[[ $phase_number -ge 7560 ]] && [[ $phase_number -lt 14265 ]] && echo Waxing >> ${tofile} && echo Gibbous >> ${tofile} 
+[[ $phase_number -ge 14265 ]] && [[ $phase_number -lt 15265 ]] && echo Full >> ${tofile} && echo Moon >> ${tofile}
+[[ $phase_number -ge 15265 ]] && [[ $phase_number -lt 21260 ]] && echo Waning >> ${tofile} && echo Gibbous >> ${tofile}
+[[ $phase_number -ge 21260 ]] && [[ $phase_number -lt 22260 ]] && echo Last >> ${tofile} && echo Quarter >> ${tofile}
+[[ $phase_number -ge 22260 ]] && [[ $phase_number -lt 29530 ]] && echo Waning >> ${tofile} && echo Crescent >> ${tofile}
