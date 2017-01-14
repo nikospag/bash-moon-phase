@@ -13,7 +13,6 @@ phase_day=$(echo 'scale=2; '$phase_number"/1000" | bc -l)
 phase=$(echo "scale=3;($phase_number-(29530/2))/(29530/2)" | bc -l)
 
 radius=149
-#phase=-.70
 if (($(echo "$phase < 0" | bc)!=0)); then
 	for y in $(seq 0 $radius);
 		do
