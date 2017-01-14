@@ -1,12 +1,12 @@
 #!/bin/bash
 #
-moon=${HOME}/moon/moon.png  #Input image location
-size="-resize 60x60"                                     # Outout image size
-icon=${HOME}/.cache/conky/phase.png                      #Output image location and name 
-tofile=${HOME}/.cache/conky/moon.txt                     #Text file location. Contains phase name and phase age in days.
-lp=2551443
-now=$(date -u +"%s")
-newmoon=592500
+moon=${HOME}/moon/moon.png                #Input image location
+size="-resize 60x60"                      # Outout image size
+icon=${HOME}/.cache/conky/phase.png       #Output image location and name 
+tofile=${HOME}/.cache/conky/moon.txt      #Text file location. Contains phase name and phase age in days.
+lp=2551443               #Lunar period (unix time)
+now=$(date -u +"%s")     #Time now (unix time)
+newmoon=592500           #Known new moon time (unix time)
 phase_d=$((($now - $newmoon) % $lp))
 phase_number=$(echo 'scale=0; '${phase_d}'/86.400' | bc -l)
 phase_day=$(echo 'scale=2; '$phase_number"/1000" | bc -l)
