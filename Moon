@@ -13,7 +13,7 @@ phase_number=$(echo 'scale=0; '${phase_d}'/86.400' | bc -l)
 phase_day=$(echo 'scale=2; '$phase_number"/1000" | bc -l) #From 0 to 29530. In order to compare integers.
 phase=$(echo "scale=3;($phase_number-(29530/2))/(29530/2)" | bc -l)  #Current phase from -1 to 1. -1=new moon, 0=full moon, 1=new moon.
 
-radius=149
+radius=149          #Half image size in pixels, eg 298/2=149 pixels.
 if (($(echo "$phase < 0" | bc)!=0)); then
 	for y in $(seq 0 $radius);
 		do
