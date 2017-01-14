@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-moon=${HOME}/Downloads/conky-weather-master/moon/moon.png  #Input image location
+moon=${HOME}/moon/moon.png  #Input image location
 size="-resize 60x60"                                     # Outout image size
 icon=${HOME}/.cache/conky/phase.png                      #Output image location and name 
 tofile=${HOME}/.cache/conky/moon.txt                     #Text file location. Contains phase name and phase age in days.
@@ -11,7 +11,6 @@ phase_d=$((($now - $newmoon) % $lp))
 phase_number=$(echo 'scale=0; '${phase_d}'/86.400' | bc -l)
 phase_day=$(echo 'scale=2; '$phase_number"/1000" | bc -l)
 phase=$(echo "scale=3;($phase_number-(29530/2))/(29530/2)" | bc -l)
-moon=${HOME}/Downloads/conky-weather-master/moon/moon.png
 
 radius=149
 #phase=-.70
