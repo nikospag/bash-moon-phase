@@ -18,7 +18,7 @@ if (($(echo "$phase < 0" | bc)!=0)); then
 		do
 		phase=$(echo 'sqrt('$phase'^2)' | bc -l)
 		x=$(echo 'sqrt('$radius'^2-'$y'^2)' | bc -l)
-		x=$(echo "($x+0.5)/1" | bc)
+		x=$(echo "($x+0.5)/1" | bc)  #Round x
 		X=$(echo "$radius-$x" | bc)
 		Y=$(echo "$radius-$y" | bc)
 		Y_mirror=$(echo "$radius+$y" | bc)
