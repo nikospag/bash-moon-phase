@@ -26,9 +26,9 @@ if (($(echo "$phase < 0" | bc)!=0)); then
 		shade=$(echo "$moon_width*$phase" | bc)
 		x_shade=$(echo "$X+$shade" | bc)
 		
-		convert -size 298x298 canvas:none -fill "rgba(0, 0, 0, 0.75)" -draw "line $X,$Y $x_shade,$Y" +depth miff:-;
+		convert -size 298x298 canvas:none -fill "rgba(0, 0, 0, 0.7)" -draw "line $X,$Y $x_shade,$Y" +depth miff:-;
 			if [ $Y_mirror -ne $Y ]; then
-		convert -size 298x298 canvas:none -fill "rgba(0, 0, 0, 0.75)" -draw "line $X,$Y_mirror $x_shade,$Y_mirror" +depth miff:-;
+		convert -size 298x298 canvas:none -fill "rgba(0, 0, 0, 0.7)" -draw "line $X,$Y_mirror $x_shade,$Y_mirror" +depth miff:-;
 			fi
 	done | convert - -background none -layers flatten png:- |  composite - ${moon} ${size} ${icon}
 elif (($(echo "$phase > 0" | bc)!=0)); then
@@ -44,9 +44,9 @@ elif (($(echo "$phase > 0" | bc)!=0)); then
 		shade=$(echo "$moon_width*$phase" | bc)
 		x_shade=$(echo "$X+$shade" | bc)
 
-		convert -size 298x298 canvas:none -fill "rgba(0, 0, 0, 0.75)" -draw "line $X,$Y $x_shade,$Y" +depth miff:-;
+		convert -size 298x298 canvas:none -fill "rgba(0, 0, 0, 0.7)" -draw "line $X,$Y $x_shade,$Y" +depth miff:-;
 			if [ $Y_mirror -ne $Y ]; then
-		convert -size 298x298 canvas:none -fill "rgba(0, 0, 0, 0.75)" -draw "line $X,$Y_mirror $x_shade,$Y_mirror" +depth miff:-;
+		convert -size 298x298 canvas:none -fill "rgba(0, 0, 0, 0.7)" -draw "line $X,$Y_mirror $x_shade,$Y_mirror" +depth miff:-;
 			fi
 	done | convert - -background none -layers flatten png:- |  composite - ${moon} ${size} ${icon}
 fi
