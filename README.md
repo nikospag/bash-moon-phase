@@ -2,8 +2,8 @@
 Bash moon phase, dynamicaly calculated and shaded.
 ==========================================================
 
-###This programm-script dynamicaly calculates and extracts to a folder an image of the current moon phase.
-###This is a bash script.
+This programm-script dynamicaly calculates and extracts to a folder an image of the current moon phase.
+This is a bash script.
 
 ![Moon](https://github.com/nikospag/bash-moon-phase/blob/master/sample/phase.png)
 
