@@ -1,5 +1,4 @@
-# bash-moon-phase
-Bash moon phase, dynamicaly calculated and shaded.
+# Bash moon phase, dynamicaly calculated and shaded.
 ==========================================================
 
 ## This programm-script dynamicaly calculates and extracts to a folder an image of the current moon phase.
