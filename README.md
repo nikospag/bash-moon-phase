@@ -8,7 +8,7 @@
 
 ![Moon](https://github.com/nikospag/bash-moon-phase/blob/master/sample/phase.png)
 
-The input moon image file size is 298x298 pixel, and must always be square (otherwise the moon circle will be distorted).
+The input moon image size is 298x298 pixel, and must always be square (otherwise the moon circle will be distorted).
 
 The output image size and output folder can be adjusted (see comments in bash file).
 
