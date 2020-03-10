@@ -1,0 +1,219 @@
+#!/bin/bash
+#  ---The orbital elements---
+# N = longitude of the ascending node
+# i = inclination to the ecliptic (plane of the Earth's orbit)
+# w = argument of perihelion
+# a = semi-major axis, or mean distance from Sun
+# e = eccentricity (0=circle, 0-1=ellipse, 1=parabola)
+# M = mean anomaly (0 at perihelion; increases uniformly with time)
+# d = Days from 31 Dec 1999 00:00 UTC. Hours, minutes, seconds are expressed as fractions of a day.
+export LC_NUMERIC="en_US.UTF-8"
+abs() {
+   echo "sqrt($1^2)" | bc -l
+}
+
+fixr() {
+   var=`echo "$1-($1/(2*$pi))*(2*$pi)" | bc`
+   if (($(echo "$var < 0" | bc)!=0)); then var=`echo "$var+(2*$pi)" | bc -l`; fi
+   echo $var
+}
+
+fixd() {
+   var=`echo "$1-($1/360)*360" | bc`
+   if (($(echo "$var < 0" | bc)!=0)); then var=`echo "$var+360" | bc -l`; fi
+   echo $var
+}
+
+fix2r() {
+   var=`echo "$1-($1/360)*360" | bc`
+   if (($(echo "$var < 0" | bc)!=0)); then var=`echo "$var+360" | bc -l`; fi
+   echo "$var*($pi/180)" | bc -l
+}
+
+fix2d() {
+   var=`echo "$1-($1/(2*$pi))*(2*$pi)" | bc`
+   if (($(echo "$var < 0" | bc)!=0)); then var=`echo "$var+(2*$pi)" | bc -l`; fi
+   echo "$var/($pi/180)" | bc -l
+}
+
+acos () {
+    if (( $(echo "$1 == 0" | bc -l) )); then
+        echo "a(1)*2" | bc -l
+    elif (( $(echo "(-1 <= $1) && ($1 < 0)" | bc -l) )); then
+        echo "a(1)*4 - a(sqrt((1/($1^2))-1))" | bc -l
+    elif (( $(echo "(0 < $1) && ($1 <= 1)" | bc -l) )); then
+        echo "a(sqrt((1/($1^2))-1))" | bc -l
+    else
+        echo "input out of range"
+        return 1
+    fi
+}
+#pi=`echo "4*a(1)" | bc -l`
+pi=$(echo "1" | awk '{ printf "%0.10f\n", $1*4*atan2(1,1); }')
+now=$(date -u +"%s")
+#d=`echo "(($now-946684800)/86400)+1" | bc -l`
+d=`echo "($now-946598400)/86400" | bc -l`
+#echo $d
+
+
+# Orbital elements of the Sun:
+N=0.0
+i=0.0
+w=`echo "282.9404+(0.000047094*$d)" | bc -l`
+w=`fix2r $w`
+a=1.000000 #AU
+ec=`echo "0.016709-(0.0000000015*$d)" | bc -l`
+M=`echo "(356.0470+(0.9856002585*$d))" | bc`
+M=`fix2r $M`
+#Calculate Sun position
+E=`echo "$M+$ec*s($M)*(1.0+$ec*c($M))" | bc -l`
+xv=`echo "c($E)-$ec" | bc -l`
+yv=`echo "sqrt(1-$ec^2)*s($E)" | bc -l`
+v=$(echo "$yv $xv" | awk '{ printf "%0.10f\n", atan2($1,$2); }')
+r=`echo "sqrt($xv^2+$yv^2)" | bc -l` 
+lonsun=`echo "$v+$w" | bc -l`
+slongd=`fix2d $lonsun`
+#echo $slongd
+
+# Orbital elements of the Moon:
+Nm=`echo "125.1228-(0.0529538083*$d)" | bc -l`
+Nm=`fix2r $Nm`
+im=5.1454
+im=`fix2r $im`
+wm=`echo "318.0634+(0.1643573223*$d)" | bc -l`
+wm=`fix2r $wm`
+am=384400 #Km
+ecm=0.054900
+Mm=`echo "115.3654+(13.0649929509*$d)" | bc -l`
+Mm=`fix2r $Mm`
+#Calculate Moon position
+E0=`echo "$Mm+$ecm*s($Mm)*(1.0+$ecm*c($Mm))" | bc -l`
+for i in {1..3};
+	do
+	E1=`echo "$E0-($E0-$ecm*s($E0)-$Mm)/(1-$ecm*c($E0))" | bc -l`
+	E0=$E1
+done
+Em=$E1
+xvm=`echo "$am*(c($Em)-$ecm)" | bc -l`
+yvm=`echo "$am*sqrt(1-$ecm^2)*s($Em)" | bc -l`
+vm=$(echo "$yvm $xvm" | awk '{ printf "%0.10f\n", atan2($1,$2); }')
+rm=`echo "sqrt($xvm^2+$yvm^2)" | bc -l`
+xeclip=`echo "$rm*(c($Nm)*c($vm+$wm)-s($Nm)*s($vm+$wm)*c($im))" | bc -l`
+yeclip=`echo "$rm*(s($Nm)*c($vm+$wm)+c($Nm)*s($vm+$wm)*c($im))" | bc -l`
+zeclip=`echo "$rm*s($vm+$wm)*s($im)" | bc -l`
+reclip=`echo "sqrt($yeclip^2+$xeclip^2)" | bc -l`
+mlong=$(echo "$yeclip $xeclip" | awk '{ printf "%0.10f\n", atan2($1,$2); }')
+mlat=$(echo "$zeclip $reclip" | awk '{ printf "%0.10f\n", atan2($1,$2); }')
+
+mlongd=`fix2d $mlong`
+mlatd=`fix2d $mlat`
+
+#Perturbations
+smlon=`echo "$w+$M" | bc -l`; smlon=`fixr $smlon`
+mmlon=`echo "$Nm+$wm+$Mm" | bc -l`; mmlon=`fixr $mmlon`
+sman=$M
+mman=$Mm
+D=`echo "$mmlon-$smlon" | bc -l`; D=`fixr $D`
+F=`echo "$mmlon-$Nm" | bc -l`; F=`fixr $F`
+#Perturbations in longitude
+pl1=`echo "-1.274*s($mman-(2*$D))" | bc -l`
+pl2=`echo "0.658*s(2*$D)" | bc -l`
+pl3=`echo "-0.186*s($sman)" | bc -l`
+pl4=`echo "-0.059*s((2*$mman)-(2*$D))" | bc -l`
+pl5=`echo "-0.057*s($mman-(2*$D)+$sman)" | bc -l`
+pl6=`echo "0.053*s($mman+(2*$D))" | bc -l`
+pl7=`echo "0.046*s((2*$D)-$sman)" | bc -l`
+pl8=`echo "0.041*s($mman-$sman)" | bc -l`
+pl9=`echo "-0.035*s($D)" | bc -l`
+pl10=`echo "-0.031*s(($mman+$sman))" | bc -l`
+pl11=`echo "-0.015*s((2*$F)-(2*$D))" | bc -l`
+pl12=`echo "0.011*s($mman-(4*$D))" | bc -l`
+mcorr=`echo "$pl1+$pl2+$pl3+$pl4+$pl5+$pl6+$pl7+$pl8+$pl9+$pl10+$pl11+$pl12" | bc -l`
+mlongd=`echo "$mlongd+$mcorr" | bc -l`
+#echo $mlongd
+#Perturbations in latitude
+pt1=`echo "-0.173*s($F-(2*$D))" | bc -l`
+pt2=`echo "-0.055*s($mman-$F-(2*$D))" | bc -l`
+pt3=`echo "-0.046*s($mman+$F-(2*$D))" | bc -l`
+pt4=`echo "0.033*s($F+(2*$D))" | bc -l`
+pt5=`echo "0.017*s((2*$mman)+$F)" | bc -l`
+mtcorr=`echo "$pt1+$pt2+$pt3+$pt4+$pt5" | bc -l`
+mlatd=`echo "$mlatd+$mtcorr" | bc -l`
+#echo $mlatd
+#Perturbations in distance
+pd1=`echo "-0.58*c($mman-(2*$D))" | bc -l`
+pd2=`echo "-0.46*c(2*$D)" | bc -l`
+mdcorr=`echo "$pd1+$pd2" | bc -l`
+rm=`echo "$rm+($mdcorr*6371.008)" | bc -l`
+#echo $rm
+elong=`echo "$mlongd-$slongd" | bc -l`
+elong=`fixd $elong`
+elong=`printf "%.2f\n" $elong`
+phase=`echo "($elong-180)/180" | bc -l`
+phase=`printf "%.4f\n" $phase`
+illum1=`abs $phase`
+illum=`echo "(1-$illum1)*100" | bc -l`
+#echo $elong
+#echo $phase
+
+moon=${HOME}/Downloads/conky-weather-master/moon/moon.png  #Input image location
+size="-resize 60x60"                                     # Outout image size
+icon=${HOME}/.cache/conky/phase.png                      #Output image location and name 
+tofile=${HOME}/.cache/conky/moon.txt
+
+radius=149
+#phase=-.70
+
+if (($(echo "$phase < 0" | bc)!=0)); then
+	for y in $(seq 0 $radius);
+		do
+		phase=$(echo 'sqrt('$phase'^2)' | bc -l)
+		x=$(echo 'sqrt('$radius'^2-'$y'^2)' | bc -l)
+		x=$(echo "($x+0.5)/1" | bc)
+		X=$(echo "$radius-$x" | bc)
+		Y=$(echo "$radius-$y" | bc)
+		Y_mirror=$(echo "$radius+$y" | bc)
+		moon_width=$(echo '2*('$radius'-'$X')' | bc)
+		shade=$(echo "$moon_width*$phase" | bc)
+		x_shade=$(echo "$X+$shade" | bc)
+		
+		convert -size 298x298 canvas:none -fill "rgba(0, 0, 0, 0.7)" -draw "line $X,$Y $x_shade,$Y" +depth miff:-;
+			if [ $Y_mirror -ne $Y ]; then
+		convert -size 298x298 canvas:none -fill "rgba(0, 0, 0, 0.7)" -draw "line $X,$Y_mirror $x_shade,$Y_mirror" +depth miff:-;
+			fi
+	done | convert - -background none -layers flatten png:- |  composite - ${moon} ${size} ${icon}
+elif (($(echo "$phase > 0" | bc)!=0)); then
+		for y in $(seq 0 $radius);
+		do
+		phase=$(echo 'sqrt('$phase'^2)' | bc -l)
+		x=$(echo 'sqrt('$radius'^2-'$y'^2)' | bc -l)
+		x=$(echo "($x+0.5)/1" | bc)
+		X=$(echo "$radius+$x" | bc)
+		Y=$(echo "$radius-$y" | bc)
+		Y_mirror=$(echo "$radius+$y" | bc)
+		moon_width=$(echo '2*('$radius'-'$X')' | bc)
+		shade=$(echo "$moon_width*$phase" | bc)
+		x_shade=$(echo "$X+$shade" | bc)
+
+		convert -size 298x298 canvas:none -fill "rgba(0, 0, 0, 0.7)" -draw "line $X,$Y $x_shade,$Y" +depth miff:-;
+			if [ $Y_mirror -ne $Y ]; then
+		convert -size 298x298 canvas:none -fill "rgba(0, 0, 0, 0.7)" -draw "line $X,$Y_mirror $x_shade,$Y_mirror" +depth miff:-;
+			fi
+	done | convert - -background none -layers flatten png:- |  composite - ${moon} ${size} ${icon}
+fi
+		
+[[ -f ${tofile} ]] && rm ${tofile}
+age=`echo "($elong/360)*100" | bc -l`
+printf "%.2f\n" $age >> ${tofile}
+printf "%.2f\n" $illum >> ${tofile}
+printf "%.0f\n" $rm >> ${tofile}
+
+
+
+
+
+
+
+
+
+
